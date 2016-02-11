@@ -16,7 +16,7 @@ example
 fred.csv.writer("GDPCA","1949-01-01","2010-01-01",";",",","C:/Users/Alexander Pisanov/Desktop/")
 ```
 
-Other acces options via 'quantmod' library and others:
+Alternative acces options via 'quantmod' library and others:
 
 ```R
 # Getting 'zoo' type time series via 'quantmod' library:
