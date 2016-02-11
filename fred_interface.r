@@ -6,7 +6,7 @@
 
 ## Entry points:
 ## fred.data.description(id)
-## fred.data.value(id,start,end,csv)
+## fred.data.values(id,start,end,csv)
 
 ## Parameters: 
 ##    id - series id from FRED website (EXAMPLE: "GDPC1" еще какие-то? CPI?)
@@ -51,6 +51,13 @@ fred.data.description <- function(id)
 }
 
 # DATA VALUES FUNCTION:
+
+# ЕП not todo: обычно values это просто вектор значений, поэтому назавание fred.data.values не совсем удачное т.к. фнкция\ возвращает объект типа zoo
+
+# TODO: необходимо разделить две функции - одна выдает zoo, другая пишет в csv, csv как флаг не очень красиво. 
+# fred.data.to_csv <- function(id,start,end)
+# fred.data.values <- function(id,start,end,csv)
+
 
 fred.data.values <- function(id,start,end,csv)
 {
