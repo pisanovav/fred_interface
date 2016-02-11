@@ -17,8 +17,8 @@
 
 library(zoo) # Zoo library is required.
 
-# Working folder, FRED endpoint and file format setup
 
+# Working folder, FRED endpoint and file format setup
 
 my.working.folder <- setwd("C:/Users/Alexander Pisanov/Desktop")
 fred.data.endpoint <- "https://research.stlouisfed.org/fred2/data/"
@@ -27,6 +27,7 @@ fred.data.format <- ".txt"
 # DATA DESCRIPTION FUNCTION:
 
 fred.data.description <- function(id)
+# ЕП: добавить докстринг к функции, ее креткое описание
 {
   err <- 0
   
@@ -34,6 +35,8 @@ fred.data.description <- function(id)
   data <- readLines(fred.data.file)
   data.id <- unlist(strsplit(gsub(" ","",data[2],fixed=TRUE),split=":"))[2]
   
+  # в чем смысл происходящего здесь?
+  # требуется разделить код, который выдает результат и его обратбоку, если что-то идет не так - issue #1
   if (!(data.id==id)) err <- err+1 else err
   if (!(data.id==id)) print("Error: 'fred.data.file' time series id doesn't match the id set by user. Please, report to the developer.")
   
@@ -41,6 +44,7 @@ fred.data.description <- function(id)
   parse.index <- match("DATEVALUE",parse)-1
   data.parse <- data[1:parse.index]
   
+  # issue #1
   if (err>0) output <-0 else output <- data.parse
   
   {return(output)}
