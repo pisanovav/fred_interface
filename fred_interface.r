@@ -1,140 +1,84 @@
-# todo: more sparse formatting of headers
-
-## DOCSTRING HERE - short description what the script does, overall task 
+## PURPOSE: The spript retrieves user-specified data sets from a FRED website and includes 3 functions and examples of their use.
 ## 
-## Author: Alexander Pisanov (pisanov.alexander@gmail.com)
+## DEVELOPER: Alexander Pisanov (pisanov.alexander@gmail.com).
+## 
+## WARNING: correct work with submonthly frequencies is not guaranteed.
+##
+## ALTERNATIVES: 'quantmod' library, 'getSymbol' function.
+##
+## TODO: submonthly frequencies, aggregation.
 
-## Entry points:
-## fred.data.description(id)
-## fred.data.values(id,start,end,csv)
+######################
+#Connection interface#
+######################
 
-## Parameters: 
-##    id - series id from FRED website (EXAMPLE: "GDPC1" еще какие-то? CPI?)
-##    start, end - что это? опциональные или обязательные параметры?
+library(zoo) # 'zoo' library is required.
 
-## WARNING: correct work with submonthly frequencies is not guaranteed
-## Alternatives: - ссылки на алтернативные пакеты как получить данные, кратко.
+# Working folder, FRED endpoint and input file format setup.
 
-library(zoo) # Zoo library is required.
-
-
-# Working folder, FRED endpoint and file format setup
-
-my.working.folder <- setwd("C:/Users/Alexander Pisanov/Desktop")
 fred.data.endpoint <- "https://research.stlouisfed.org/fred2/data/"
 fred.data.format <- ".txt"
 
+# Data parsing function.
 
-get_data_by_id <- fucntion(id)
+fred.data.parser <- function(id)
+#' DESCRIPTION: The function gets the .txt file with the series specified with 'id' from the FRED website, parses it and retrieves a number of objects: 'start' - series start date (Date), 'end" - end date (Date), 'descriptor' - data set description (Character), 'array' - data vector (Character).
+#' PARAMETERS: 'id' (required) - time series id. Syntax is given in Examples.
 {
   fred.data.file <- paste0(fred.data.endpoint,id,fred.data.format)
   data <- readLines(fred.data.file)
   data.id <- unlist(strsplit(gsub(" ","",data[2],fixed=TRUE),split=":"))[2]
-  
-  # в чем смысл происходящего здесь?
-  # требуется разделить код, который выдает результат и его обратбоку, если что-то идет не так - issue #1
-  if (!(data.id==id)) err <- err+1 else err
-  if (!(data.id==id)) print("Error: 'fred.data.file' time series id doesn't match the id set by user. Please, report to the developer.")
-  
-  # TODO: вместо кода выше нужен exception
-  # http://stackoverflow.com/questions/12723800/how-to-return-a-error-message-in-r
-  # http://stackoverflow.com/questions/1608130/equivalent-of-throw-in-r#comment1473968_1608170
-  
-  # if (!(data.id==id)) + дальше код остановки программы с собщением ()
-  
-  return data
-}
-
-
-
-
-# DATA DESCRIPTION FUNCTION:
-fred.data.description <- function(id)
-# ЕП: добавить докстринг к функции, ее краткое описание
-{
-  data = get_data_by_id(id)
-  
-  # нужен комментарий, что строка делает  
-  parse <- gsub(" ","",data,fixed=TRUE)
-  
-  # нужен комментарий, что строка делает 
-  parse.index <- match("DATEVALUE",parse)-1
-  
-  # нужен комментарий, что строка делает 
-  return(data[1:parse.index])
-  
-  # общий смысл происходящего: вместо кода, в котором переплетены и обработка ошибок и парсинг и повоторяющаяся в дргом месте функция
-  # у вас есть лаконичный код, который делает одно понятное дело - парсит файл. ко всяким выражениям парсинга нужен комментарий, ктоорый поясняет что 
-  # что эти стрки должны делать, какой результат. 
-  
-  # issue #1
-  # идея с 0 был не очень удачной, извините, лучше убрать
-  #if (err>0) output <-0 else output <- data.parse
-  
-  #{return(output)}
-}
-
-# DATA VALUES FUNCTION:
-
-
-# TODO: необходимо разделить две функции - одна выдает zoo, другая пишет в csv, csv как флаг не очень красиво. 
-# fred.data.to_csv <- function(id,start,end)
-# fred.data.values <- function(id,start,end,csv)
-
-# ЕП not todo: обычно values это просто вектор значений, поэтому назавание fred.data.values не совсем удачное т.к. фнкция\ возвращает объект типа zoo
-fred.data.values <- function(id,start,end,csv)
-{
-  err <-0
-  
-  # This function block gets and parses the .txt file into a numeric vector "data.parse":
-  
-  data = get_data_by_id(id)
-  
   data.start <- as.Date(substring(gsub(" ","",data[8],fixed=TRUE),11,20))
   data.end <- as.Date(substring(gsub(" ","",data[8],fixed=TRUE),23,32))
-  # должно заканчиваться exception 
-  #if (!((data.start<=start)&(data.end>=end))) {err <- err+1;print("Error: check dates (start/end) parameters. Start/end date should be in time-series' date range. Output is set to zero. You can use 'fred.data.description' function for date range info.")} else err <- err
-
-  # эта ошибка орабатывается в get_data_by_id(id)
-  #if (!(data.id==id)) {err <- err+1;print("Error: 'fred.data.file' time series' id doesn't match the id set by user. Report to the developer.")} else err
-    
-  # тоже повторяющийся код, нет?
-  parse <- gsub(" ","",data,fixed=TRUE)
-  parse.index <- match("DATEVALUE",parse)
-  parse <- data[-(1:parse.index)]
+  cut.index <- match("DATEVALUE",gsub(" ","",data,fixed=TRUE))
+  data.descriptor <- data[1:(cut.index-1)]
+  data.array <- data[-(1:cut.index)]
+  data.parameters <- list("start"=data.start,"end"=data.end,"descriptor"=data.descriptor,"array"=data.array)
   
-  # комментарий
-  date.parse <- as.Date(substring(gsub(" ","",parse,fixed=TRUE),1,10))
-  data.parse <- as.numeric(substring(gsub(" ","",parse,fixed=TRUE),11,100))
+  if (!(data.id==id)) stop("Parsing error: 'fred.data.file' time series id doesn't match the id set by user. Report to the developer at pisanov.alexander@gmail.com.")
   
-  # This function block converts "data.parse" into a "zoo" object and trims out the window of a requested width, outputs the window and writes .csv file if csv=1.
-  
-  zoo.data <- zoo(data.parse,order.by=date.parse)
-  
-  
-  if (err>0) output <-0 else {output <- as.matrix(window(zoo.data,start=start,end=end));colnames(output) <- id}
-  
-  # TODO: вынести в отедльную функцию 
-  if (csv>0) {write.table(zoo(output,order.by=index(output)),file=paste0(id,".csv"),row.names=TRUE,sep=";",dec=",");print(paste0(id,".csv was written to ",my.working.folder,"."))} else print(".csv was not requested.")
-  
-  {return (output)}
+  return(data.parameters)
 }
 
-# EXAMPLE:
+# Data retrieval function.
 
-# TODO: must add test - short hardcoded constant shoule be equal to result of function calls 
+fred.data.retriever <- function(id,startdate,enddate)
+#' DESCRIPTION: The function utilizes 'fred.data.parser' function to retrieve a 'zoo' class time series object, taken within a user-specified date range.
+#' PARAMETERS: 'id' (required) - time series id; startdate(required) - time series start date; enddate(required) - time series end date. Syntax is given in Examples.
+{
+  data <- fred.data.parser(id)
+  data.dates <- as.Date(substring(gsub(" ","",data$array,fixed=TRUE),1,10))
+  data.values <- as.numeric(substring(gsub(" ","",data$array,fixed=TRUE),11,100))
+  data.zoo <- zoo(data.values,order.by=data.dates)
+  data.output <- as.matrix(window(data.zoo,start=startdate,end=enddate))
+  colnames(data.output) <- id
 
-GDPC1 <- fred.data.description("GDPC1") # Series' id is set as a parameter.
-GDPC1 # Data sescription should have been retrieved successfully.
+  return(data.output)
+}
 
-GDPC1 <- fred.data.values("GDPC1","1947-01-01","2016-01-01",0) # Series' end date is set incorrectly, .csv disabled.
-GDPC1 # Zero with an error message.
+# .csv writing function.
 
-GDPC1 <- fred.data.values("GDPC1","1947-01-01","2015-09-01",1) # Retrying with a correct date range, .csv enabled.
-GDPC1 # Data values should have been retrieved successfully.
+fred.csv.writer <- function(id,startdate,enddate,delim,decim,folder)
+#' DESCRIPTION: The function utilizes 'fred.data.retriever' function to write a .csv file containing the result of the 'fred.data.retriever' function call to a user-specified folder.
+#' PARAMETERS: 'id' (required) - time series id; startdate(required) - time series start date; enddate(required) - time series end date; delim(required) - column delimiter; decim(required) - decimal points delimiter. Syntax is given in Examples.
+{
+  data.output <- fred.data.retriever(id,startdate,enddate)
+  write.table(data.output,file=paste0(folder,id,".csv"),row.names=TRUE,sep=delim,dec=decim)
+  print(paste0(id,".csv has been written to ",my.working.folder,"."))
+}
 
-####################
-#YOUR CODE HERE:####
-####################
+##########
+#Examples#
+##########
 
-## TODO: submonthly frequencies, aggregation.
+example <- fred.data.parser("GDPCA")
+example$descriptor
+
+example <- fred.data.retriever("GDPCA","1949-01-01","2010-01-01")
+example
+
+fred.csv.writer("GDPCA","1949-01-01","2010-01-01",";",",","C:/Users/Alexander Pisanov/Desktop/")
+
+###########
+#YOUR CODE#
+###########
