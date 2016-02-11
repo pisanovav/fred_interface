@@ -3,7 +3,7 @@ Interface to FRED economic statistics in R
 
 St. Louis Fed [FRED economic statistics](https://research.stlouisfed.org/fred2/) is a key source on economic data about the US and international economy. This database also has an [API](https://research.stlouisfed.org/docs/api/fred/) that allows convenient data retrieval for further analysis/plotting in R.
 
-[fred_interface.r](fred_interface.r) is simple access script to get time series by names from FRED into ```zoo``` type time series. It also enables user to save data to a ```.csv``` file.
+[fred_interface.r](fred_interface.r) is a simple access script to get time series by names from FRED into ```zoo``` type time series. It also enables user to save data to a ```.csv``` file.
 
 ```R
 # Using 'fred_interface.r' functions to get a data set description...:
@@ -16,7 +16,7 @@ example
 fred.csv.writer("GDPCA","1949-01-01","2010-01-01",";",",","C:/Users/Alexander Pisanov/Desktop/")
 ```
 
-Other acces options via 'quantmod' library and others: ***Comment here*** 
+Other acces options via 'quantmod' library and others:
 
 ```R
 # Getting 'zoo' type time series via 'quantmod' library:
