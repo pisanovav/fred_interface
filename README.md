@@ -3,24 +3,20 @@ Interface to FRED economic statistics in R
 
 St. Louis Fed [FRED economic statistics](https://research.stlouisfed.org/fred2/) is a key source on economic data about the US and international economy. This database also has an [API](https://research.stlouisfed.org/docs/api/fred/) that allows convenient data retrieval for further analysis/plotting in R.
 
-[fred_interface.r](fred_interface.r) is a simple access script to get time series by names from FRED into ```zoo``` type time series. It also enables user to save data to a ```.csv``` file.
+```get_fred_zoo()``` in [fred_interface.r](fred_interface.r) is an access function to get ```zoo```-type time series by name from FRED. No API key is necessary. Can also write to local csv file by ```fred_to_csv()```
 
 ```R
-# Using 'fred_interface.r' functions to get a data set description...:
-example <- fred.data.parser("GDPCA")
-example$descriptor
-# ... to get 'zoo' type time series:
-example <- fred.data.retriever("GDPCA","1949-01-01","2010-01-01")
-example
-# ... and to write a '.csv' file to a specified folder:
-fred.csv.writer("GDPCA","1949-01-01","2010-01-01",";",",","C:/Users/Alexander Pisanov/Desktop/")
+gdp = get_fred_zoo('GDPCA')
+cpi_base100 = get_fred_zoo('CPIAUCSL', '2015-01-01', '2015-12-01')
+fred_to_csv('DEXUSEU')
 ```
 
-Alternative acces options via ```quantmod``` library and others:
-
+Similar to access options by ```quantmod``` library:
 ```R
-# Getting 'zoo' type time series via 'quantmod' library:
 library("quantmod")
 getSymbols("CPIAUCSL",src="FRED")
 ```
 
+See also:
+ - <https://github.com/sboysel/fredr>
+ - [FRED API](https://research.stlouisfed.org/docs/api/fred/)
