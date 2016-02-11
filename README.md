@@ -5,6 +5,8 @@ St. Louis Fed [FRED economic statistics](https://research.stlouisfed.org/fred2/)
 
 ```get_fred_zoo()``` in [fred_interface.r](fred_interface.r) is an access function to get ```zoo```-type time series by name from FRED. No API key is necessary. Can also write to local csv file by ```fred_to_csv()```
 
+Example:
+
 ```R
 gdp = get_fred_zoo('GDPCA')
 cpi_base100 = get_fred_zoo('CPIAUCSL', '2015-01-01', '2015-12-01')
