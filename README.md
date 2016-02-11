@@ -6,7 +6,7 @@ St. Louis Fed [FRED economic statistics](https://research.stlouisfed.org/fred2/)
 [fred_interface.r](fred_interface.r) is simple access script to get time series by names from FRED into ```zoo``` type time series. It also enables user to save data to a .csv file.
 
 ```R
-# Using 'fred_interface.r' function to get a data set description:
+# Using 'fred_interface.r' functions to get a data set description...:
 example <- fred.data.parser("GDPCA")
 example$descriptor
 # ... to get 'zoo' type time series:
