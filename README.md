@@ -12,7 +12,7 @@ example$descriptor
 # ... to get 'zoo' type time series:
 example <- fred.data.retriever("GDPCA","1949-01-01","2010-01-01")
 example
-# ... to write a '.csv' file to a specified folder:
+# ... and to write a '.csv' file to a specified folder:
 fred.csv.writer("GDPCA","1949-01-01","2010-01-01",";",",","C:/Users/Alexander Pisanov/Desktop/")
 ```
 
