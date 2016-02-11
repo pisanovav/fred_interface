@@ -19,7 +19,7 @@ fred.csv.writer("GDPCA","1949-01-01","2010-01-01",";",",","C:/Users/Alexander Pi
 Other acces options via 'quantmod' library and others: ***Comment here*** 
 
 ```R
-# 'quantmod' library:
+# Getting 'zoo' type time series via 'quantmod' library:
 library("quantmod")
 getSymbols("CPIAUCSL",src="FRED")
 ```
