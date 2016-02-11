@@ -1,84 +1,101 @@
-## PURPOSE: The spript retrieves user-specified data sets from a FRED website and includes 3 functions and examples of their use.
-## 
-## DEVELOPER: Alexander Pisanov (pisanov.alexander@gmail.com).
-## 
-## WARNING: correct work with submonthly frequencies is not guaranteed.
+## Retrieve zoo time series from FRED by parsing online csv files (no API key)    
 ##
-## ALTERNATIVES: 'quantmod' library, 'getSymbol' function.
+## Data source: https://research.stlouisfed.org/fred2/
 ##
-## TODO: submonthly frequencies, aggregation, testing.
+## Authour(s): Evgeniy Pogrebnyak, Alexander Pisanov
+## 
+## Entry points:
+##     id = 
+##     get_fred_zoo(id)
+##     fred_to_csv(id)
+##
+## Alternatives: 
+## - getSymbol() from quantmod library
+## - https://github.com/sboysel/fredr
+## - parse XML from FRED API
 
-######################
-#Connection interface#
-######################
+library(RCurl)
+library(zoo) 
 
-library(zoo) # 'zoo' library is required.
-
-# Working folder, FRED endpoint and input file format setup.
-
-fred.data.endpoint <- "https://research.stlouisfed.org/fred2/data/"
-fred.data.format <- ".txt"
-
-# Data parsing function.
-
-fred.data.parser <- function(id)
-#' DESCRIPTION: The function gets the .txt file with the series specified with 'id' from the FRED website, parses it and retrieves a number of objects: 'start' - series start date (Date), 'end' - end date (Date), 'descriptor' - data set description (Character), 'array' - data vector (Character).
-#' PARAMETERS: 'id' (required) - time series id. Syntax is given in Examples.
+get_id = function(data)
 {
-  fred.data.file <- paste0(fred.data.endpoint,id,fred.data.format)
-  data <- readLines(fred.data.file)
-  data.id <- unlist(strsplit(gsub(" ","",data[2],fixed=TRUE),split=":"))[2]
-  data.start <- as.Date(substring(gsub(" ","",data[8],fixed=TRUE),11,20))
-  data.end <- as.Date(substring(gsub(" ","",data[8],fixed=TRUE),23,32))
-  cut.index <- match("DATEVALUE",gsub(" ","",data,fixed=TRUE))
-  data.descriptor <- data[1:(cut.index-1)]
-  data.array <- data[-(1:cut.index)]
-  data.parameters <- list("start"=data.start,"end"=data.end,"descriptor"=data.descriptor,"array"=data.array)
+   # "Series ID:           CPIAUCSL"
+   return(sub("Series ID:\\s+", "", data[2]))
+}
+
+get_endpoints = function(data)
+{
+  # "Date Range:          1947-01-01 to 2015-12-01"
+  txt = data[8]
+  pat = "\\d{4}-\\d{2}-\\d{2}" 
+  matches = as.Date(regmatches(txt,gregexpr(pat,txt))[[1]])
+  return(matches)
+}
+
+# Get content of a .txt file specified by 'id' from the FRED website  
+get_content_lines <- function(id)
+  {   
+  fred.data.urlbase  <- "https://research.stlouisfed.org/fred2/data/"
+  fred.data.extension <- ".txt"
+  filename <- paste0(fred.data.urlbase,id,fred.data.extension)
+ 
+  # need getURL because readLines() fails on https://
+  big_string <- getURL(filename, ssl.verifypeer=0L, followlocation=1L)
+  lines <- strsplit(big_string, '\r\n')[[1]]
+ 
+  return(lines)
+  }
+
+# wrapper to check lines are valid 
+get_lines <- function(id)
+  {
+  lines <- get_content_lines(id)
+
+  # if id is invalid, we get an HTML document
+  if (lines[1] == "<!DOCTYPE html>") 
+     stop(paste("Invaid time series id:", id))
+
+  # some legacy check
+  if (get_id(lines) != id)
+     stop(paste("id queried and obtained do not match:", id, data.id))
   
-  if (!(data.id==id)) stop("Parsing error: 'fred.data.file' time series id doesn't match the id set by user. Report to the developer at pisanov.alexander@gmail.com.")
-  
-  return(data.parameters)
+  return(lines)
+} 
+
+# get parts of .txt file as list of strings or dates
+components <- function(id)
+  {
+  data = get_lines(id)
+  cut = charmatch("DATE", data)
+  return(list("start" = get_endpoints(data)[1],  # start date 
+              "end"   = get_endpoints(data)[2],  # most recent (end) date
+              "desc"  = data[1:(cut-1)],  # time series text description
+              "lines" = data[-(1:cut)]    # string lines with data
+         ))
+   }
+
+get_fred_zoo <- function(id, start_dt = NULL, end_dt = NULL)
+  {
+  q = read.table(text = components(id)$lines, stringsAsFactors = FALSE) 
+  zts = zoo(q[,2], as.Date(q[,1]))
+  return (window(zts, start_dt, end = end_dt))
 }
 
-# Data retrieval function.
+# 'pseudo test' - delete in your own code
+# WARNING: may fail on data revision
+if (get_fred_zoo('GDPCA', '2014-01-01') != 15961.7)
+   stop()
+if (get_fred_zoo('CPIAUCSL', '2015-11-01', '2015-12-01')[2] !=  237.847)
+   stop()
+# end of 'pseudo test'
 
-fred.data.retriever <- function(id,startdate,enddate)
-#' DESCRIPTION: The function utilizes 'fred.data.parser' function to retrieve a 'zoo' class time series object, taken within a user-specified date range.
-#' PARAMETERS: 'id' (required) - time series id; startdate(required) - time series start date; enddate(required) - time series end date. Syntax is given in Examples.
+fred_to_csv = function(id)
 {
-  data <- fred.data.parser(id)
-  data.dates <- as.Date(substring(gsub(" ","",data$array,fixed=TRUE),1,10))
-  data.values <- as.numeric(substring(gsub(" ","",data$array,fixed=TRUE),11,100))
-  data.zoo <- zoo(data.values,order.by=data.dates)
-  data.output <- as.matrix(window(data.zoo,start=startdate,end=enddate))
-  colnames(data.output) <- id
-
-  return(data.output)
+  fn = paste0(id,".txt")
+  zts = get_fred_zoo(id)
+  write.csv(zts,file=fn,row.names=TRUE)
+  warning(paste("Wrote", fn, "to current working directory:", getwd()))
+  return(file.path(getwd(),fn)) 
 }
 
-# .csv writing function.
-
-fred.csv.writer <- function(id,startdate,enddate,delim,decim,folder)
-#' DESCRIPTION: The function utilizes 'fred.data.retriever' function to write a .csv file to a user-specified folder. The file replicates the result of the 'fred.data.retriever' function call. 
-#' PARAMETERS: 'id' (required) - time series id; startdate(required) - time series start date; enddate(required) - time series end date; delim(required) - column delimiter; decim(required) - decimal points delimiter. Syntax is given in Examples.
-{
-  data.output <- fred.data.retriever(id,startdate,enddate)
-  write.table(data.output,file=paste0(folder,id,".csv"),row.names=TRUE,sep=delim,dec=decim)
-  print(paste0(id,".csv has been written to ",my.working.folder,"."))
-}
-
-##########
-#Examples#
-##########
-
-example <- fred.data.parser("GDPCA")
-example$descriptor
-
-example <- fred.data.retriever("GDPCA","1949-01-01","2010-01-01")
-example
-
-fred.csv.writer("GDPCA","1949-01-01","2010-01-01",";",",","C:/Users/Alexander Pisanov/Desktop/")
-
-###########
-#YOUR CODE#
-###########
+# fred_to_csv('GDPCA')
