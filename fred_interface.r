@@ -59,7 +59,7 @@ fred.data.retriever <- function(id,startdate,enddate)
 # .csv writing function.
 
 fred.csv.writer <- function(id,startdate,enddate,delim,decim,folder)
-#' DESCRIPTION: The function utilizes 'fred.data.retriever' function to write a .csv file containing the result of the 'fred.data.retriever' function call to a user-specified folder.
+#' DESCRIPTION: The function utilizes 'fred.data.retriever' function to write a .csv file to a user-specified folder. The file replicates the result of the 'fred.data.retriever' function call. 
 #' PARAMETERS: 'id' (required) - time series id; startdate(required) - time series start date; enddate(required) - time series end date; delim(required) - column delimiter; decim(required) - decimal points delimiter. Syntax is given in Examples.
 {
   data.output <- fred.data.retriever(id,startdate,enddate)
