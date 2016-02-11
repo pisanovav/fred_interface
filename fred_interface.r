@@ -1,17 +1,24 @@
-## Version: 2.1; release date: 12.02.2016; developer: Alexander Pisanov (any questions - please, email on pisanov.alexander@gmail.com).
-## Description: 2 functions: fred.data.description(id), fred.data.value(id,start,end,csv).
-## Parameters: id - series id from FRED website; start; end; csv - 1 if you want a .csv file to be written on your disk, 0 if not.
-## Syntax: x1 <- fred.data.description("GDPC1"); x2 <- fred.data.value("GDPC1","1947-01-01","2016-01-01",1).
-## Output: x1 - character vector, x2 - numeric vector, .csv file with dates and values delimited.
-## WARNING: correct work with submonthly frequencies is not guaranteed.
+# todo: more sparse formatting of headers
 
-####################
-#FRED INTERFACE:####
-####################
+## DOCSTRING HERE - short description what the script does, overall task 
+## 
+## Author: Alexander Pisanov (pisanov.alexander@gmail.com)
 
-# WORKING FOLDER, FRED ENDPOINT AND FILE FORMAT SETUP:
+## Entry points:
+## fred.data.description(id)
+## fred.data.value(id,start,end,csv)
+
+## Parameters: 
+##    id - series id from FRED website (EXAMPLE: "GDPC1" еще какие-то? CPI?)
+##    start, end - что это? опциональные или обязательные параметры?
+
+## WARNING: correct work with submonthly frequencies is not guaranteed
+## Alternatives: - ссылки на алтернативные пакеты как получить данные, кратко.
 
 library(zoo) # Zoo library is required.
+
+# Working folder, FRED endpoint and file format setup
+
 
 my.working.folder <- setwd("C:/Users/Alexander Pisanov/Desktop")
 fred.data.endpoint <- "https://research.stlouisfed.org/fred2/data/"
