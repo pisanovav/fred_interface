@@ -22,7 +22,7 @@ fred.data.format <- ".txt"
 # Data parsing function.
 
 fred.data.parser <- function(id)
-#' DESCRIPTION: The function gets the .txt file with the series specified with 'id' from the FRED website, parses it and retrieves a number of objects: 'start' - series start date (Date), 'end" - end date (Date), 'descriptor' - data set description (Character), 'array' - data vector (Character).
+#' DESCRIPTION: The function gets the .txt file with the series specified with 'id' from the FRED website, parses it and retrieves a number of objects: 'start' - series start date (Date), 'end' - end date (Date), 'descriptor' - data set description (Character), 'array' - data vector (Character).
 #' PARAMETERS: 'id' (required) - time series id. Syntax is given in Examples.
 {
   fred.data.file <- paste0(fred.data.endpoint,id,fred.data.format)
