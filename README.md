@@ -15,11 +15,11 @@ example
 fred.csv.writer("GDPCA","1949-01-01","2010-01-01",";",",","C:/Users/Alexander Pisanov/Desktop/")
 ```
 
-Other acces options via quantmod and others: ***Comment here*** 
+Other acces options via 'quantmod' library and others: ***Comment here*** 
 
 ```R
+# 'quantmod' library:
 library("quantmod")
-
 getSymbols("CPIAUCSL",src="FRED")
 ```
 
