@@ -6,7 +6,7 @@
 ##
 ## ALTERNATIVES: 'quantmod' library, 'getSymbol' function.
 ##
-## TODO: submonthly frequencies, aggregation.
+## TODO: submonthly frequencies, aggregation, testing.
 
 ######################
 #Connection interface#
