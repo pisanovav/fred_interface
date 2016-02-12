@@ -53,11 +53,11 @@ get_lines <- function(id)
 
   # if id is invalid, we get an HTML document
   if (lines[1] == "<!DOCTYPE html>") 
-     stop(paste("Invaid time series id:", id))
+     stop(paste("Invaid time series id: ", id))
 
   # some legacy check
   if (get_id(lines) != id)
-     stop(paste("id queried and obtained do not match:", id, data.id))
+     stop(paste("id queried and obtained do not match: ", id, data.id))
   
   return(lines)
 } 
@@ -78,7 +78,7 @@ get_fred_zoo <- function(id, start_dt = NULL, end_dt = NULL)
   {
   q = read.table(text = components(id)$lines, stringsAsFactors = FALSE) 
   zts = zoo(q[,2], as.Date(q[,1]))
-  return (window(zts, start_dt, end = end_dt))
+  return (window(zts, start = start_dt, end = end_dt))
 }
 
 fred_to_csv = function(id)
@@ -86,7 +86,7 @@ fred_to_csv = function(id)
   fn = paste0(id,".txt")
   zts = get_fred_zoo(id)
   write.csv(zts,file=fn,row.names=TRUE)
-  warning(paste("Wrote", fn, "to current working directory:", getwd()))
+  warning(paste("Wrote ", fn, " to current working directory: ", getwd()))
   return(file.path(getwd(),fn)) 
 }
 
@@ -95,4 +95,4 @@ fred_to_csv = function(id)
 # b = (get_fred_zoo('CPIAUCSL', '2015-11-01', '2015-12-01')[2] !=  237.847)
 # c = (class(fred_to_csv('GDPCA')) == "character")
 # if (!(a && b && c))
-#   stop()
+# stop()
