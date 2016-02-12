@@ -2,10 +2,10 @@
 ##
 ## Data source: https://research.stlouisfed.org/fred2/
 ##
-## Authour(s): Evgeniy Pogrebnyak, Alexander Pisanov
+## Author(s): Evgeniy Pogrebnyak, Alexander Pisanov
 ## 
 ## Entry points:
-##     id = 
+##     id = 'CPIAUCSL'
 ##     get_fred_zoo(id)
 ##     fred_to_csv(id)
 ##
@@ -81,14 +81,6 @@ get_fred_zoo <- function(id, start_dt = NULL, end_dt = NULL)
   return (window(zts, start_dt, end = end_dt))
 }
 
-# 'pseudo test' - delete in your own code
-# WARNING: may fail on data revision
-if (get_fred_zoo('GDPCA', '2014-01-01') != 15961.7)
-   stop()
-if (get_fred_zoo('CPIAUCSL', '2015-11-01', '2015-12-01')[2] !=  237.847)
-   stop()
-# end of 'pseudo test'
-
 fred_to_csv = function(id)
 {
   fn = paste0(id,".txt")
@@ -98,4 +90,9 @@ fred_to_csv = function(id)
   return(file.path(getwd(),fn)) 
 }
 
-# fred_to_csv('GDPCA')
+# moved tests to test.r
+# a = (get_fred_zoo('GDPCA', '2014-01-01') != 15961.7)
+# b = (get_fred_zoo('CPIAUCSL', '2015-11-01', '2015-12-01')[2] !=  237.847)
+# c = (class(fred_to_csv('GDPCA')) == "character")
+# if (!(a && b && c))
+#   stop()
