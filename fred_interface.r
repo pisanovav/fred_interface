@@ -83,7 +83,7 @@ get_fred_zoo <- function(id, start_dt = NULL, end_dt = NULL)
 
 fred_to_csv = function(id)
 {
-  fn = paste0(id,".txt")
+  fn = paste0(id,".csv")
   zts = get_fred_zoo(id)
   write.csv(zts,file=fn,row.names=TRUE)
   warning(paste("Wrote ", fn, " to current working directory: ", getwd()))
