@@ -3,6 +3,7 @@
 ## Data source: https://research.stlouisfed.org/fred2/
 ##
 ## Author(s): Evgeniy Pogrebnyak, Alexander Pisanov
+## Code: https://github.com/pisanovav/fred_interface
 ## 
 ## Entry points:
 ##     id = 'CPIAUCSL'
