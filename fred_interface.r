@@ -89,10 +89,3 @@ fred_to_csv = function(id)
   warning(paste("Wrote ", fn, " to current working directory: ", getwd()))
   return(file.path(getwd(),fn)) 
 }
-
-# moved tests to test.r
-# a = (get_fred_zoo('GDPCA', '2014-01-01') != 15961.7)
-# b = (get_fred_zoo('CPIAUCSL', '2015-11-01', '2015-12-01')[2] !=  237.847)
-# c = (class(fred_to_csv('GDPCA')) == "character")
-# if (!(a && b && c))
-# stop()
