@@ -1,60 +1,94 @@
-# Purpose: access interface to Rosstat KEP database by Evgeny Pogrebnyak.
-# Database URL: https://github.com/epogrebnyak/rosstat-kep-data.
-# Code URL: https://github.com/pisanovav/kep_interface.
+# Purpose: access interface to FRED database to retrieve 'zoo' class time-series.
+# Database URL: https://research.stlouisfed.org/fred2.
+# Code URL: https://github.com/pisanovav/fred_interface.
 # Author(s): Evgeny Pogrebnyak, Alexander Pisanov.
 #
 # Entry points:
-#   id = 'CPI_rog', frequency = 'a'
-#   get.zoo.kep(id,frequency)
-#   write.csv.kep(id,frequency)
+#   id = 'GDPCA'
+#   get.zoo.fred(id)
+#   write.csv.fred(id)
 #
 # Todo: function tests.
 
-############################
-# KEP CONNECTION INTERFACE #
-############################
+#############################
+# FRED CONNECTION INTERFACE #
+#############################
 
+library(RCurl) # 'RCulr' library is required.
 library(zoo) # 'zoo' library is required.
 
-get.data.url.kep <- function(frequency)
-  #' Returns an URL string. Syntax: get.data.url.kep("a").
-  #' frequency (required) - time series frequency. Input: "a", "q", "m".  
+get.data.url.fred <- function(id)
+  #' Returns an URL string. Syntax: get.data.url.fred("CPIAUCSL").
+  #' id (required) - time series id.
 {
-  if (!(frequency %in% c("a","q","m"))) stop("Incorrect frequency parameter. Use 'a', 'q' or 'm' in double quotes.")
+  data.url <- paste0("https://research.stlouisfed.org/fred2/data/",id,".txt")
   
-  data.folder <- "https://raw.githubusercontent.com/epogrebnyak/rosstat-kep-data/master/output/"
-  data.filename <- c(a="data_annual.txt",q="data_quarter.txt",m="data_monthly.txt")
-  data.url <- paste0(data.folder,data.filename[frequency])
+  if (!url.exists(data.url)) stop("The URL doesn't exist. Check time series' id.")
   
   return(data.url)
 }
 
-get.data.frame.kep <- function(id,frequency)
-  #' Returns an object of class 'data.frame' with data of a selected frequency. Syntax: get.data.frame.kep("a").
-  #' id(required) - time series id (see full list here: https://raw.githubusercontent.com/epogrebnyak/rosstat-kep-data/master/output/varnames.md), frequency(required) - time series frequency.
+get.data.lines.fred <- function(id)
+  #' Returns a character vector containing .txt file data. Syntax: get.data.url.fred("CPIAUCSL").
+  #' id (required) - time series id.
 {
-  data.table <- read.table(get.data.url.kep(frequency),sep = ",",header=TRUE,row.names=1)[id]
+  data.content <- getURL(get.data.url.fred(id),ssl.verifypeer=0L,followlocation=1L)
+  data.lines <- strsplit(data.content,'\r\n')[[1]]
   
-  return(data.table)
+  return(data.lines)
 }
 
-get.zoo.kep <- function(id,frequency,start.date=NULL,end.date=NULL)
-  #' Returns an object of class 'zoo' with a time series of a selected id, frequency and date range. Syntax: get.zoo.kep("CPI_rog","q","1999-01-01","2000-01-01").
-  #' id(required) - time series id (see full list here: https://raw.githubusercontent.com/epogrebnyak/rosstat-kep-data/master/output/varnames.md), frequency(required) - time series frequency, start/end.date(optional) - date range.
+get.data.id.fred <- function(data.lines)
+  #' Returns a character element containing time series id from get.data.lines.fred(id). Syntax: get.data.id.fred(data.lines).
+  #' data.lines(required) - character vector containing FRED time series .txt file data.
 {
-  data.table <- get.data.frame.kep(id,frequency)
-  data.zoo <- zoo(data.table,row.names(data.table))
-  output <- window(data.zoo,start=start.date,end=end.date)
+  data.id <- sub("Series ID:\\s+","",data.lines[2])
   
-  return(output)
+  if (!(data.id)==id) stop ("Data id doesn't match URL id. Report to the developer.")
+  
+  return(data.id)
 }
 
-write.csv.kep <- function(id,frequency,start.date=NULL,end.date=NULL)
-  #' Writes a .csv file to current working directory. Syntax: write.csv.kep("CPI_rog","q","1999-01-01","2000-01-01").
-  #' id(required) - time series id (see full list here: https://raw.githubusercontent.com/epogrebnyak/rosstat-kep-data/master/output/varnames.md), frequency(required) - time series frequency, start/end.date(optional) - date range.
+get.data.range.fred <- function(data.lines)
+  #' Returns a date vector containing time series start and end dates from get.data.lines.fred(id). Syntax: get.data.range.fred(data.lines).
+  #' data.lines(required) - character vector containing FRED time series .txt file data.
+{
+  string <- data.lines[8]
+  pattern <- "\\d{4}-\\d{2}-\\d{2}"
+  data.range <- as.Date(regmatches(string,gregexpr(pattern,string))[[1]])
+  
+  return(data.range)
+}
+
+get.data.components.fred <- function(id)
+  #' Returns a 'list' object containing formatted parts of the .txt file data. Syntax: get.data.components.fred("CPIAUCSL").
+  #' id(required) - time series id (look up here: https://research.stlouisfed.org/fred2/).
+{
+  data.lines <- get.data.lines.fred(id)
+  cut <- charmatch("DATE",data.lines)
+  
+  return(list("start"=get.data.range.fred(data.lines)[1],
+              "end"=get.data.range.fred(data.lines)[2],
+              "desc"=data.lines[1:(cut-1)],
+              "data"=data.lines[-(1:cut)]))
+}  
+
+get.zoo.fred <- function(id,start.date=NULL,end.date=NULL)
+  #' Returns an object of class 'zoo' with a time series of a selected id and date range. Syntax: get.zoo.fred("CPIAUCSL","1999-01-01","2000-01-01").
+  #' id(required) - time series id (look up here: https://research.stlouisfed.org/fred2/), start/end.date(optional) - date range.
+{
+  data.table <- read.table(text=get.data.components.fred(id)$data,stringsAsFactors=FALSE)
+  data.zoo <- zoo(data.table[,2],order.by=data.table[,1])
+  
+  return(window(data.zoo,start=start.date,end=end.date))
+}
+
+write.csv.fred <- function(id,start.date=NULL,end.date=NULL)
+  #' Writes a .csv file to current working directory. Syntax: write.csv.fred("CPIAUCSL",1999-01-01","2000-01-01").
+  #' id(required) - time series id (look up here: https://research.stlouisfed.org/fred2/), start/end.date(optional) - date range.
 {
   data.filename <- paste0(id,".csv")
-  write.csv(get.zoo.kep(id,frequency,start.date,end.date),file=data.filename,row.names=TRUE,dec=",")
+  write.csv(get.zoo.fred(id,start.date,end.date),file=data.filename,row.names=TRUE,dec=",")
   
   warning(paste("Wrote ",data.filename," to current working directory: ",getwd()))
   
@@ -65,6 +99,6 @@ write.csv.kep <- function(id,frequency,start.date=NULL,end.date=NULL)
 # YOUR CODE #
 #############
 
-source("kep_interface.R") # File with the interface code should be saved in your current working directory.
+source("fred_interface.R") # File with the interface code should be saved in your current working directory.
 
 # ...
