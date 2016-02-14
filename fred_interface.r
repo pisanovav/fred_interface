@@ -1,4 +1,4 @@
-# Purpose: access interface to FRED database to retrieve 'zoo' class time-series.
+# Purpose: access interface to FRED database to retrieve 'zoo' class time series.
 # Database URL: https://research.stlouisfed.org/fred2.
 # Code URL: https://github.com/pisanovav/fred_interface.
 # Author(s): Evgeny Pogrebnyak, Alexander Pisanov.
